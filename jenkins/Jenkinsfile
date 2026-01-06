@@ -1,20 +1,25 @@
 pipeline {
-    agent any
-
-    stages {
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t my-web-app ./app'
-            }
-        }
-
-        stage('Deploy Container') {
-            steps {
-                sh '''
-                  docker rm -f webapp || true
-                  docker run -d -p 8081:80 --name webapp my-web-app
-                '''
-            }
-        }
+  agent {
+    docker {
+      image 'docker:26-cli'
+      args '-v /var/run/docker.sock:/var/run/docker.sock'
     }
+  }
+
+  stages {
+    stage('Build Docker Image') {
+      steps {
+        sh 'docker build -t my-web-app ./app'
+      }
+    }
+
+    stage('Run Container') {
+      steps {
+        sh '''
+          docker rm -f webapp || true
+          docker run -d -p 8081:80 --name webapp my-web-app
+        '''
+      }
+    }
+  }
 }
