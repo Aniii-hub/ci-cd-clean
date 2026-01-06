@@ -1,0 +1,15 @@
+# Terraform
+**/.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
+# Jenkins runtime
+jenkins_home/
+
+# Credentials
+.aws/
+.ssh/
+
+# OS / IDE
+.vscode/
+desktop.ini
