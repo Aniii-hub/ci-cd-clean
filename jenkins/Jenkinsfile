@@ -2,12 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Code') {
-            steps {
-                git 'https://github.com/Aniii-hub/basic-cicd.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t my-web-app ./app'
@@ -17,9 +11,8 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 sh '''
-                docker stop webapp || true
-                docker rm webapp || true
-                docker run -d -p 8081:80 --name webapp my-web-app
+                  docker rm -f webapp || true
+                  docker run -d -p 8081:80 --name webapp my-web-app
                 '''
             }
         }
