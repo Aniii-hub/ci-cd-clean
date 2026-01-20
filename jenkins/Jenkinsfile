@@ -2,11 +2,12 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOST_URL = "http://host.docker.internal:9000"
+        SONAR_HOST_URL = "http://sonarqube:9000"
         SONAR_TOKEN = credentials('sonar-token')
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -17,6 +18,7 @@ pipeline {
             steps {
                 sh '''
                 docker run --rm \
+                  --network cicd-net \
                   -e SONAR_HOST_URL=$SONAR_HOST_URL \
                   -e SONAR_LOGIN=$SONAR_TOKEN \
                   -v "$PWD:/usr/src" \
