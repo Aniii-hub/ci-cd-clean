@@ -1,7 +1,31 @@
 pipeline {
     agent any
 
+    environment {
+        SONAR_HOST_URL = "http://host.docker.internal:9000"
+        SONAR_TOKEN = credentials('sonar-token')
+    }
+
     stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                sh '''
+                docker run --rm \
+                  -e SONAR_HOST_URL=$SONAR_HOST_URL \
+                  -e SONAR_LOGIN=$SONAR_TOKEN \
+                  -v "$PWD:/usr/src" \
+                  sonarsource/sonar-scanner-cli \
+                  -Dsonar.projectKey=ci-cd-clean
+                '''
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t my-web-app ./app'
@@ -11,8 +35,8 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 sh '''
-                  docker rm -f webapp || true
-                  docker run -d -p 8081:80 --name webapp my-web-app
+                docker rm -f webapp || true
+                docker run -d -p 8081:80 --name webapp my-web-app
                 '''
             }
         }
