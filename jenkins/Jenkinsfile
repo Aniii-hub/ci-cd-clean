@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         SONAR_HOST_URL = "http://sonarqube:9000"
-        SONAR_TOKEN = credentials('sonar-token')
     }
 
     stages {
@@ -16,15 +15,18 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                sh '''
-                docker run --rm \
-                  --network cicd-net \
-                  -e SONAR_HOST_URL=$SONAR_HOST_URL \
-                  -e SONAR_LOGIN=$SONAR_TOKEN \
-                  -v "$PWD:/usr/src" \
-                  sonarsource/sonar-scanner-cli \
-                  -Dsonar.projectKey=ci-cd-clean
-                '''
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                    docker run --rm \
+                      --network cicd-net \
+                      -e SONAR_HOST_URL=http://sonarqube:9000 \
+                      -e SONAR_LOGIN=$SONAR_TOKEN \
+                      -v "$PWD:/usr/src" \
+                      sonarsource/sonar-scanner-cli \
+                      -Dsonar.projectKey=ci-cd-clean \
+                      -Dsonar.sources=.
+                    '''
+                }
             }
         }
 
