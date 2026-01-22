@@ -65,21 +65,24 @@ resource "aws_instance" "cicd_server" {
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.cicd_sg.id]
 
-  user_data = <<-EOF
-    #!/bin/bash
-    yum update -y
-    amazon-linux-extras install docker -y
-    systemctl start docker
-    systemctl enable docker
-    usermod -aG docker ec2-user
+   user_data = <<-EOF
+   #!/bin/bash
+   yum update -y
+   amazon-linux-extras install docker -y
+   systemctl start docker
+   systemctl enable docker
 
-    docker run -d \
-      -p 8080:8080 \
-      -p 50000:50000 \
-      -v jenkins_home:/var/jenkins_home \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      jenkins/jenkins:lts
-  EOF
+   chmod 666 /var/run/docker.sock
+   sleep 20
+
+   docker run -d \
+    --name jenkins \
+    -p 8080:8080 \
+    -p 50000:50000 \
+    -v jenkins_home:/var/jenkins_home \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    jenkins/jenkins:lts
+EOF
 
   tags = {
     Name = "terraform-jenkins-cicd"
